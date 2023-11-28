@@ -1,5 +1,5 @@
 #define NOB_IMPLEMENTATION
-#include "src/nob.h"
+#include "nob.h"
 
 int main(int argc, char** argv)
 {
@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 	nob_cmd_append(&cmd, "cc");
 	nob_cmd_append(&cmd, "-Wall", "-Wextra", "-ggdb", "-pedantic");
 	nob_cmd_append(&cmd, "-o", "minos");
-	nob_cmd_append(&cmd, "src/main.c");
+	nob_cmd_append(&cmd, "minos.c");
 	if (!nob_cmd_run_sync(cmd)) return 1;
 
 	if (argc > 0) {
