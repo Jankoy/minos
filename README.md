@@ -24,10 +24,12 @@ For example:
 ```minos
 34 35 + .
 500 80 - .
+420 = .
 ```
 
 In the above program the numbers 34 and 35 are pushed onto the stack before being popped off and added together, the sum is then pushed back onto the stack.
 The '.' is the dump instruction, it pops the top item off of the stack and displays it to the screen.
 The next line pushes the numbers 500 and 80 to the stack before subtracting them and then dumping the difference to the screen.
+The third line pushes 420 to the stack then pops two items off of the stack and compares them, then dumps them.
 
-Currently Minos has 6 valid commands; push (A number literal), add (+), subtract (-), multiply (*), divide (/), and dump (.).
+Currently Minos has 6 valid commands; push (A number literal), add (+), subtract (-), multiply (*), divide (/), dump (.), and equal (=).
