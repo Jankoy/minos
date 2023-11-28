@@ -403,11 +403,13 @@ void interpretInstruction(Stack * stack, Instruction instruction)
 	}
 }
 
-void interpretProgram(Stack * stack, InstructionArray * instructions)
+void interpretProgram(InstructionArray * instructions)
 {
+	Stack stack = {0};
 	for (size_t i = 0; i < instructions->count; i++) {
-		interpretInstruction(stack, instructions->items[i]);
+		interpretInstruction(&stack, instructions->items[i]);
 	}
+	nob_da_free(stack);
 }
 
 void compileInstruction(Instruction instruction, FILE * out)
@@ -491,9 +493,9 @@ void write_dump_function(FILE * out)
 	fprintf(out, "    ret\n");
 }
 
-void compileProgram(InstructionArray * instructions, const char * out_filepath)
+void compileProgram(InstructionArray * instructions)
 {
-	FILE * out = fopen(out_filepath, "w");
+	FILE * out = fopen("output.asm", "w");
 	write_dump_function(out);
 	fprintf(out, "\n");
 	fprintf(out, "segment .text\n");
@@ -584,9 +586,7 @@ int main(int argc, char** argv)
 
 		InstructionArray instructions = {0};
 		readInstructionsFromFile(filepath, &instructions);
-		Stack stack = {0};
-		interpretProgram(&stack, &instructions);
-		nob_da_free(stack);
+		interpretProgram(&instructions);
 		nob_da_free(instructions);
 	} else if (strcmp(subcommand, "compile") == 0) {
 		if (argc < 1) {
@@ -598,7 +598,7 @@ int main(int argc, char** argv)
 
 		InstructionArray instructions = {0};
 		readInstructionsFromFile(filepath, &instructions);
-		compileProgram(&instructions, "output.asm");
+		compileProgram(&instructions);
 		nob_da_free(instructions);
 	} else {
 		nob_log(NOB_INFO, "Usage: %s <run/compile> <args>", program);
