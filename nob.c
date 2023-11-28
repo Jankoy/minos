@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 	nob_cmd_append(&cmd, "cc");
 	nob_cmd_append(&cmd, "-Wall", "-Wextra", "-ggdb", "-pedantic");
 	nob_cmd_append(&cmd, "-o", "minos");
-	nob_cmd_append(&cmd, "minos.c");
+	nob_cmd_append(&cmd, "minos.c", "types.c", "linter.c", "interpreter.c", "compiler.c");
 	if (!nob_cmd_run_sync(cmd)) return 1;
 
 	if (argc > 0) {
