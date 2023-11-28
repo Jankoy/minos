@@ -551,9 +551,16 @@ bool readInstructionsFromFile(const char * filepath, InstructionArray * instruct
 			nob_sb_append_buf(&token_copy, token.data, token.count);
 			nob_sb_append_null(&token_copy);
 			int num = 0;
-			str2int(&num, token_copy.items, 10);
-			nob_da_append(instructions, push(i32(num)));
+			int result = str2int(&num, token_copy.items, 10);
 			nob_sb_free(token_copy);
+			if (result == STR2INT_SUCCESS) {
+				nob_da_append(instructions, push(i32(num)));
+			} else {
+				nob_log(NOB_ERROR, "Unable to convert '"SV_Fmt"' into a number", SV_Arg(token));
+				success = false;
+				content.count = 0;
+			}
+			
 		} else {
 			nob_log(NOB_ERROR, "Unrecognized token: '"SV_Fmt"'", SV_Arg(token));
 			success = false;
@@ -585,7 +592,7 @@ int main(int argc, char** argv)
 		const char * filepath = nob_shift_args(&argc, &argv);
 
 		InstructionArray instructions = {0};
-		readInstructionsFromFile(filepath, &instructions);
+		if (!readInstructionsFromFile(filepath, &instructions)) return 1;
 		interpretProgram(&instructions);
 		nob_da_free(instructions);
 	} else if (strcmp(subcommand, "compile") == 0) {
@@ -597,7 +604,7 @@ int main(int argc, char** argv)
 		const char * filepath = nob_shift_args(&argc, &argv);
 
 		InstructionArray instructions = {0};
-		readInstructionsFromFile(filepath, &instructions);
+		if (!readInstructionsFromFile(filepath, &instructions)) return 1;
 		compileProgram(&instructions);
 		nob_da_free(instructions);
 	} else {
