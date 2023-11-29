@@ -7,14 +7,19 @@ static void do_push(ValueStack * stack, Value v)
 	nob_da_append(stack, v);
 }
 
-static Value do_pop(ValueStack * stack)
+static Value do_pop(Instruction instruction, ValueStack * stack)
 {
+	if (stack->count < 1) {
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		exit(1);
+	}
+	
 	Value v = stack->items[stack->count - 1];
 	nob_da_pop(stack);
 	return v;
 }
 
-static Value do_plus(Value a, Value b)
+static Value do_plus(Instruction instruction, Value a, Value b)
 {
 	switch (a.type) {
 	case I32:
@@ -28,7 +33,7 @@ static Value do_plus(Value a, Value b)
 		case BOOL:
 			return i32(a.i32 + (int32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -46,7 +51,7 @@ static Value do_plus(Value a, Value b)
 		case BOOL:
 			return u32(a.u32 + (uint32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -64,7 +69,7 @@ static Value do_plus(Value a, Value b)
 		case BOOL:
 			return f32(a.f32 + (float)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -82,7 +87,7 @@ static Value do_plus(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool + b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -90,7 +95,7 @@ static Value do_plus(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -100,7 +105,7 @@ static Value do_plus(Value a, Value b)
 	return (Value) {0};
 }
 
-static Value do_minus(Value a, Value b)
+static Value do_minus(Instruction instruction, Value a, Value b)
 {
 	switch (a.type) {
 	case I32:
@@ -114,7 +119,7 @@ static Value do_minus(Value a, Value b)
 		case BOOL:
 			return i32(a.i32 - (int32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -132,7 +137,7 @@ static Value do_minus(Value a, Value b)
 		case BOOL:
 			return u32(a.u32 - (uint32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -150,7 +155,7 @@ static Value do_minus(Value a, Value b)
 		case BOOL:
 			return f32(a.f32 - (float)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -168,7 +173,7 @@ static Value do_minus(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool + b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -176,7 +181,7 @@ static Value do_minus(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -186,7 +191,7 @@ static Value do_minus(Value a, Value b)
 	return (Value) {0};
 }
 
-static Value do_multiply(Value a, Value b)
+static Value do_multiply(Instruction instruction, Value a, Value b)
 {
 	switch (a.type) {
 	case I32:
@@ -200,7 +205,7 @@ static Value do_multiply(Value a, Value b)
 		case BOOL:
 			return i32(a.i32 * (int32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -218,7 +223,7 @@ static Value do_multiply(Value a, Value b)
 		case BOOL:
 			return u32(a.u32 * (uint32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -236,7 +241,7 @@ static Value do_multiply(Value a, Value b)
 		case BOOL:
 			return f32(a.f32 * (float)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -254,7 +259,7 @@ static Value do_multiply(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool + b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -262,7 +267,7 @@ static Value do_multiply(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -272,7 +277,7 @@ static Value do_multiply(Value a, Value b)
 	return (Value) {0};
 }
 
-static Value do_divide(Value a, Value b)
+static Value do_divide(Instruction instruction, Value a, Value b)
 {
 	switch (a.type) {
 	case I32:
@@ -286,7 +291,7 @@ static Value do_divide(Value a, Value b)
 		case BOOL:
 			return i32(a.i32 / (int32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -304,7 +309,7 @@ static Value do_divide(Value a, Value b)
 		case BOOL:
 			return u32(a.u32 / (uint32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -322,7 +327,7 @@ static Value do_divide(Value a, Value b)
 		case BOOL:
 			return f32(a.f32 / (float)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -340,7 +345,7 @@ static Value do_divide(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool + b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -348,7 +353,7 @@ static Value do_divide(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -358,7 +363,7 @@ static Value do_divide(Value a, Value b)
 	return (Value) {0};
 }
 
-static void do_dump(Value v)
+static void do_dump(Instruction instruction, Value v)
 {
 	switch (v.type) {
 	case I32:
@@ -374,7 +379,7 @@ static void do_dump(Value v)
 		printf("%u\n", (uint32_t)v._bool);
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -382,7 +387,7 @@ static void do_dump(Value v)
 	}
 }
 
-static Value do_equal(Value a, Value b)
+static Value do_equal(Instruction instruction, Value a, Value b)
 {
 	switch (a.type) {
 	case I32:
@@ -396,7 +401,7 @@ static Value do_equal(Value a, Value b)
 		case BOOL:
 			return _bool(a.i32 == b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -414,7 +419,7 @@ static Value do_equal(Value a, Value b)
 		case BOOL:
 			return _bool(a.u32 == b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -447,7 +452,7 @@ static Value do_equal(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool == b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -455,7 +460,7 @@ static Value do_equal(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -465,24 +470,23 @@ static Value do_equal(Value a, Value b)
 	return (Value) {0};
 }
 
-static void do_if(ValueStack * stack, size_t end_index, size_t * ip)
+static void do_if(Instruction instruction, Value value, size_t end_index, size_t * ip)
 {
-	Value v = do_pop(stack);
-	switch (v.type) {
+	switch (value.type) {
 		case I32:
-			if (!v.i32) *ip = end_index;
+			if (!value.i32) *ip = end_index;
 			break;
 		case U32:
-			if (!v.u32) *ip = end_index;
+			if (!value.u32) *ip = end_index;
 			break;
 		case F32:
-			if (!v.f32) *ip = end_index;
+			if (!value.f32) *ip = end_index;
 			break;
 		case BOOL:
-			if (!v._bool) *ip = end_index;
+			if (!value._bool) *ip = end_index;
 			break;
 		case ERR:
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -503,30 +507,30 @@ static void do_end()
 static void interpretInstruction(ValueStack * stack, Instruction instruction, size_t * ip)
 {
 	size_t orig_ip = *ip;
-	switch (instruction.type) {
+	switch (instruction.token.type) {
 		case TOK_PUSH:
 			do_push(stack, instruction.value);
 			break;
 		case TOK_PLUS:
-			do_push(stack, do_plus(do_pop(stack), do_pop(stack)));
+			do_push(stack, do_plus(instruction, do_pop(instruction, stack), do_pop(instruction, stack)));
 			break;
 		case TOK_MINUS:
-			do_push(stack, do_minus(do_pop(stack), do_pop(stack)));
+			do_push(stack, do_minus(instruction, do_pop(instruction, stack), do_pop(instruction, stack)));
 			break;
 		case TOK_MULTIPLY:
-			do_push(stack, do_multiply(do_pop(stack), do_pop(stack)));
+			do_push(stack, do_multiply(instruction, do_pop(instruction, stack), do_pop(instruction, stack)));
 			break;
 		case TOK_DIVIDE:
-			do_push(stack, do_divide(do_pop(stack), do_pop(stack)));
+			do_push(stack, do_divide(instruction, do_pop(instruction, stack), do_pop(instruction, stack)));
 			break;
 		case TOK_DUMP:
-			do_dump(do_pop(stack));
+			do_dump(instruction, do_pop(instruction, stack));
 			break;
 		case TOK_EQUAL:
-			do_push(stack, do_equal(do_pop(stack), do_pop(stack)));
+			do_push(stack, do_equal(instruction, do_pop(instruction, stack), do_pop(instruction, stack)));
 			break;
 		case TOK_IF:
-			do_if(stack, instruction.value.u32, ip);
+			do_if(instruction, do_pop(instruction, stack), instruction.value.u32, ip);
 			break;
 		case TOK_ELSE:
 			do_else(instruction.value.u32, ip);

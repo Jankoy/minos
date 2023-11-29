@@ -16,6 +16,13 @@ typedef enum {
 	TOK_IF,
 	TOK_ELSE,
 	TOK_END
+} TokenType;
+
+typedef struct {
+	const char * filepath;
+	size_t line_num;
+	size_t col_num;
+	TokenType type;
 } Token;
 
 typedef enum {
@@ -37,7 +44,7 @@ typedef struct {
 } Value;
 
 typedef struct {
-	Token type;
+	Token token;
 	Value value;
 } Instruction;
 
@@ -69,5 +76,9 @@ Value i32(int32_t n);
 Value u32(uint32_t n);
 Value f32(float n);
 Value _bool(bool b);
+
+Token tok(const char * filepath, size_t line_num, size_t col_num, TokenType type);
+
+void reportError(const char * filepath, size_t line_num, size_t column_num, const char * error);
 
 #endif // _TYPES_H

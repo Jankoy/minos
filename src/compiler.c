@@ -19,7 +19,7 @@ static size_t strip_ext(char *fname)
 
 static void compileInstruction(size_t * stack_count, size_t ip, Instruction instruction, FILE * out)
 {
-	switch (instruction.type) {
+	switch (instruction.token.type) {
 	case TOK_PUSH:
 		switch (instruction.value.type) {
 		case I32:

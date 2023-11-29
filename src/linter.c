@@ -25,80 +25,12 @@ static int str2int(int *out, char *s, int base) {
     return STR2INT_SUCCESS;
 }
 
-static Instruction push(Value x)
+static Instruction instruct(const char * filepath, size_t line_num, size_t col_num, TokenType type, Value x)
 {
 	Instruction i = {0};
-	i.type = TOK_PUSH;
+	i.token = tok(filepath, line_num, col_num, type);
 	i.value = x;
 	return i;
-}
-
-static Instruction plus()
-{
-	Instruction i = {0};
-	i.type = TOK_PLUS;
-	return i;
-}
-
-static Instruction minus()
-{
-	Instruction i = {0};
-	i.type = TOK_MINUS;
-	return i;
-}
-
-static Instruction multiply()
-{
-	Instruction i = {0};
-	i.type = TOK_MULTIPLY;
-	return i;
-}
-
-static Instruction divide()
-{
-	Instruction i = {0};
-	i.type = TOK_DIVIDE;
-	return i;
-}
-
-static Instruction dump()
-{
-	Instruction i = {0};
-	i.type = TOK_DUMP;
-	return i;
-}
-
-static Instruction equal()
-{
-	Instruction i = {0};
-	i.type = TOK_EQUAL;
-	return i;
-}
-
-static Instruction _if()
-{
-	Instruction i = {0};
-	i.type = TOK_IF;
-	return i;
-}
-
-static Instruction _else()
-{
-	Instruction i = {0};
-	i.type = TOK_ELSE;
-	return i;
-}
-
-static Instruction end()
-{
-	Instruction i = {0};
-	i.type = TOK_END;
-	return i;
-}
-
-void parseError(const char * filepath, size_t line_num, size_t column_num, const char * error)
-{
-	nob_log(NOB_ERROR, "%s:%zu:%zu: %s", filepath, line_num, column_num, error);
 }
 
 static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, Nob_String_View line, size_t line_num, InstructionArray * instructions)
@@ -108,45 +40,49 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 
 	while (line.count > 0 && success) {
 		Nob_String_View token = nob_sv_chop_by_space(&line);
+		size_t col_num = token.data - start + 1;
 
+		if (token.data[0] == '#') {
+			break;
+		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("#"))) {
 			break;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("+"))) {
-			nob_da_append(instructions, plus());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PLUS, u32(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("-"))) {
-			nob_da_append(instructions, minus());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_MINUS, u32(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("*"))) {
-			nob_da_append(instructions, multiply());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_MULTIPLY, u32(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("/"))) {
-			nob_da_append(instructions, divide());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_DIVIDE, u32(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("."))) {
-			nob_da_append(instructions, dump());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_DUMP, u32(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("="))) {
-			nob_da_append(instructions, equal());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_EQUAL, u32(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("true"))) {
-			nob_da_append(instructions, push(_bool(true)));
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, _bool(true)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("false"))) {
-			nob_da_append(instructions, push(_bool(false)));
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, _bool(false)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("if"))) {
 			nob_da_append(stack, instructions->count);
-			nob_da_append(instructions, _if());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_IF, u32(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("else"))) {
@@ -156,26 +92,26 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 				instructions->items[index].value = u32((uint32_t) instructions->count + 1);
 				nob_da_append(stack, instructions->count);
 			} else {
-				parseError(filepath, line_num, token.data - start + 1, "An 'else' statement without a preceding 'if' statement");
+				reportError(filepath, line_num, col_num, "An 'else' statement without a preceding 'if' statement");
 				success = false;
 				continue;
 			}
-			nob_da_append(instructions, _else());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_ELSE, u32(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("end"))) {
 			if (stack->count > 0) {
 				size_t index = stack->items[stack->count - 1];
 				nob_da_pop(stack);
-				if (instructions->items[index].type == TOK_IF || instructions->items[index].type == TOK_ELSE) {
+				if (instructions->items[index].token.type == TOK_IF || instructions->items[index].token.type == TOK_ELSE) {
 					instructions->items[index].value = u32((uint32_t) instructions->count);
 				}
 			} else {
-				parseError(filepath, line_num, token.data - start + 1, "An 'end' statement without a preceding block opening statement");
+				reportError(filepath, line_num, token.data - start + 1, "An 'end' statement without a preceding block opening statement");
 				success = false;
 				continue;
 			}
-			nob_da_append(instructions, end());
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_END, u32(0)));
 			continue;
 		}
 		if (isdigit((int)*token.data)) {
@@ -186,15 +122,15 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 			int result = str2int(&num, token_copy.items, 10);
 			nob_sb_free(token_copy);
 			if (result == STR2INT_SUCCESS) {
-				nob_da_append(instructions, push(i32(num)));
+				nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, i32(num)));
 			} else {
-				parseError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unable to convert '"SV_Fmt"' into a number", SV_Arg(token)));
+				reportError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unable to convert '"SV_Fmt"' into a number", SV_Arg(token)));
 				nob_temp_reset();
 				success = false;
 			}
 			continue;
 		}
-		parseError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unrecognized token: '"SV_Fmt"'", SV_Arg(token)));
+		reportError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unrecognized token: '"SV_Fmt"'", SV_Arg(token)));
 		nob_temp_reset();
 		success = false;
 	}

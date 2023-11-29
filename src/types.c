@@ -1,5 +1,7 @@
 #include "types.h"
 
+#include "nob.h"
+
 Value i32(int32_t n)
 {
 	Value v = {0};
@@ -30,4 +32,19 @@ Value _bool(bool b)
 	v.type = BOOL;
 	v._bool = b;
 	return v;
+}
+
+Token tok(const char * filepath, size_t line_num, size_t col_num, TokenType type)
+{
+	Token t = {0};
+	t.filepath = filepath;
+	t.line_num = line_num;
+	t.col_num = col_num;
+	t.type = type;
+	return t;
+}
+
+void reportError(const char * filepath, size_t line_num, size_t column_num, const char * error)
+{
+	nob_log(NOB_ERROR, "%s:%zu:%zu: %s", filepath, line_num, column_num, error);
 }
