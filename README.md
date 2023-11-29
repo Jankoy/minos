@@ -21,6 +21,7 @@ You can use the Minos executable in two ways, you can run a .minos file in the i
 Minos is a stack-based language like Porth or Forth, you can push numbers to the stack and then perform operations with them.
 
 For example:
+
 ```minos
 34 35 + .
 500 80 - .
@@ -32,4 +33,21 @@ The '.' is the dump instruction, it pops the top item off of the stack and displ
 The next line pushes the numbers 500 and 80 to the stack before subtracting them and then dumping the difference to the screen.
 The third line pushes 420 to the stack then pops two items off of the stack and compares them, then dumps them.
 
-Currently Minos has 6 valid commands; push (A number literal), add (+), subtract (-), multiply (*), divide (/), dump (.), and equal (=).
+Currently Minos has 9 valid commands; push (A number literal), add (+), subtract (-), multiply (*), divide (/), dump (.), equal (=), if (if), else (else), and end (end).
+
+An example of if-else statements:
+
+```minos
+34 35 + 69 = if
+	1 if
+		69 .
+	else
+		42 .
+	end
+else
+	420 .
+end
+```
+
+The code above will dump 69 to the output, something to be aware of, if statements in Minos are syntactically 'reversed' from standard if statements.
+The conditions generally are before the if statement and not after, considering they have to be pushed onto the stack for the if to pop them off.
