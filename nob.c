@@ -1,5 +1,5 @@
 #define NOB_IMPLEMENTATION
-#include "nob.h"
+#include "src/nob.h"
 
 int main(int argc, char** argv)
 {
@@ -12,13 +12,13 @@ int main(int argc, char** argv)
 	nob_cmd_append(&cmd, "cc");
 	nob_cmd_append(&cmd, "-Wall", "-Wextra", "-ggdb", "-pedantic");
 	nob_cmd_append(&cmd, "-o", "minos");
-	nob_cmd_append(&cmd, "main.c", "types.c", "linter.c", "interpreter.c", "compiler.c");
+	nob_cmd_append(&cmd, "src/main.c", "src/types.c", "src/linter.c", "src/interpreter.c", "src/compiler.c");
 	if (!nob_cmd_run_sync(cmd)) return 1;
 
 	if (argc > 0) {
 		const char * subcmd = nob_shift_args(&argc, &argv);
 
-		if (strcmp(subcmd, "run") == 0) {
+		if (strcmp(subcmd, "-r") == 0) {
 			cmd.count = 0;
 			nob_cmd_append(&cmd, "./minos");
 			nob_da_append_many(&cmd, argv, argc);
