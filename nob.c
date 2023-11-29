@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 		nob_da_append_many(&cmd, input_paths, NOB_ARRAY_LEN(input_paths));
 		if (!nob_cmd_run_sync(cmd)) return 1;	
 	} else {
-		nob_log(NOB_INFO, "Executable is up-to-date");
+		nob_log(NOB_INFO, "Executable is already up to date");
 	}
 
 	if (argc > 0) {
