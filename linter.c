@@ -150,15 +150,26 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("else"))) {
+			if (stack->count > 0) {
+				size_t index = stack->items[stack->count - 1];
+				nob_da_pop(stack);
+				instructions->items[index].value = u32((uint32_t) instructions->count + 1);
+				nob_da_append(stack, instructions->count);
+			} else {
+				parseError(filepath, line_num, token.data - start + 1, "An 'else' statement without a preceding 'if' statement");
+				success = false;
+				continue;
+			}
 			nob_da_append(instructions, _else());
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("end"))) {
 			if (stack->count > 0) {
-				size_t if_index = stack->items[stack->count - 1];
+				size_t index = stack->items[stack->count - 1];
 				nob_da_pop(stack);
-				instructions->items[if_index].value.type = U32;
-				instructions->items[if_index].value.u32 = (uint32_t) instructions->count;
+				if (instructions->items[index].type == TOK_IF || instructions->items[index].type == TOK_ELSE) {
+					instructions->items[index].value = u32((uint32_t) instructions->count);
+				}
 			} else {
 				parseError(filepath, line_num, token.data - start + 1, "An 'end' statement without a preceding block opening statement");
 				success = false;

@@ -28,7 +28,7 @@ static Value do_plus(Value a, Value b)
 		case BOOL:
 			return i32(a.i32 + (int32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -46,7 +46,7 @@ static Value do_plus(Value a, Value b)
 		case BOOL:
 			return u32(a.u32 + (uint32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -64,7 +64,7 @@ static Value do_plus(Value a, Value b)
 		case BOOL:
 			return f32(a.f32 + (float)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -82,7 +82,7 @@ static Value do_plus(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool + b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -90,7 +90,7 @@ static Value do_plus(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -114,7 +114,7 @@ static Value do_minus(Value a, Value b)
 		case BOOL:
 			return i32(a.i32 - (int32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -132,7 +132,7 @@ static Value do_minus(Value a, Value b)
 		case BOOL:
 			return u32(a.u32 - (uint32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -150,7 +150,7 @@ static Value do_minus(Value a, Value b)
 		case BOOL:
 			return f32(a.f32 - (float)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -168,7 +168,7 @@ static Value do_minus(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool + b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -176,7 +176,7 @@ static Value do_minus(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -200,7 +200,7 @@ static Value do_multiply(Value a, Value b)
 		case BOOL:
 			return i32(a.i32 * (int32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -218,7 +218,7 @@ static Value do_multiply(Value a, Value b)
 		case BOOL:
 			return u32(a.u32 * (uint32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -236,7 +236,7 @@ static Value do_multiply(Value a, Value b)
 		case BOOL:
 			return f32(a.f32 * (float)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -254,7 +254,7 @@ static Value do_multiply(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool + b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -262,7 +262,7 @@ static Value do_multiply(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -286,7 +286,7 @@ static Value do_divide(Value a, Value b)
 		case BOOL:
 			return i32(a.i32 / (int32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -304,7 +304,7 @@ static Value do_divide(Value a, Value b)
 		case BOOL:
 			return u32(a.u32 / (uint32_t)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -322,7 +322,7 @@ static Value do_divide(Value a, Value b)
 		case BOOL:
 			return f32(a.f32 / (float)b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -340,7 +340,7 @@ static Value do_divide(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool + b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -348,7 +348,7 @@ static Value do_divide(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -374,7 +374,7 @@ static void do_dump(Value v)
 		printf("%u\n", (uint32_t)v._bool);
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -396,7 +396,7 @@ static Value do_equal(Value a, Value b)
 		case BOOL:
 			return _bool(a.i32 == b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -414,7 +414,7 @@ static Value do_equal(Value a, Value b)
 		case BOOL:
 			return _bool(a.u32 == b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -447,7 +447,7 @@ static Value do_equal(Value a, Value b)
 		case BOOL:
 			return _bool(a._bool == b._bool);
 		case ERR:
-			nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		default:
 			assert(false && "Unreachable");
@@ -455,7 +455,7 @@ static Value do_equal(Value a, Value b)
 		}
 		break;
 	case ERR:
-		nob_log(NOB_ERROR, "An error happened somewhere somehow, whoops");
+		nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 		exit(1);
 	default:
 		assert(false && "Unreachable");
@@ -481,15 +481,18 @@ static void do_if(ValueStack * stack, size_t end_index, size_t * ip)
 		case BOOL:
 			if (!v._bool) *ip = end_index;
 			break;
+		case ERR:
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
 		default:
 			assert(false && "Unreachable");
 			break;
 	}
 }
 
-static void do_else()
+static void do_else(size_t end_index, size_t * ip)
 {
-	assert(false && "Not implemented");
+	*ip = end_index;
 }
 
 static void do_end()
@@ -499,6 +502,7 @@ static void do_end()
 
 static void interpretInstruction(ValueStack * stack, Instruction instruction, size_t * ip)
 {
+	size_t orig_ip = *ip;
 	switch (instruction.type) {
 		case TOK_PUSH:
 			do_push(stack, instruction.value);
@@ -525,7 +529,7 @@ static void interpretInstruction(ValueStack * stack, Instruction instruction, si
 			do_if(stack, instruction.value.u32, ip);
 			break;
 		case TOK_ELSE:
-			do_else();
+			do_else(instruction.value.u32, ip);
 			break;
 		case TOK_END:
 			do_end();
@@ -534,13 +538,14 @@ static void interpretInstruction(ValueStack * stack, Instruction instruction, si
 			assert(false && "Unreachable");
 			break;
 	}
+	if (*ip == orig_ip) *ip += 1;
 }
 
 void interpretProgram(InstructionArray * instructions)
 {
 	ValueStack stack = {0};
 	size_t ip = 0;
-	for (ip = 0; ip < instructions->count; ip++) {
+	while (ip < instructions->count) {
 		interpretInstruction(&stack, instructions->items[ip], &ip);
 	}
 	nob_da_free(stack);

@@ -17,59 +17,120 @@ static size_t strip_ext(char *fname)
     return end - fname + 1;
 }
 
-static void compileInstruction(size_t * label_count, Instruction instruction, FILE * out)
+static void compileInstruction(size_t * stack_count, size_t ip, Instruction instruction, FILE * out)
 {
 	switch (instruction.type) {
 	case TOK_PUSH:
-		fprintf(out, "    push    %d\n", instruction.value.i32);
+		switch (instruction.value.type) {
+		case I32:
+			fprintf(out, "    push    %d\n", instruction.value.i32);
+			break;
+		case U32:
+			fprintf(out, "    push    %u\n", instruction.value.u32);
+			break;
+		case F32:
+			fprintf(out, "    push    %f\n", instruction.value.f32);
+			break;
+		case BOOL:
+			fprintf(out, "    push    %d\n", instruction.value._bool);
+			break;
+		case ERR:
+			assert(false && "Unreachable");
+			break;
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		*stack_count += 1;
 		break;
 	case TOK_PLUS:
+		if (*stack_count < 2) {
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
 		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		*stack_count -= 2;
 		fprintf(out, "    add     rax, rbx\n");
 		fprintf(out, "    push    rax\n");
+		*stack_count += 1;
 		break;
 	case TOK_MINUS:
+		if (*stack_count < 2) {
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
 		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		*stack_count -= 2;
 		fprintf(out, "    sub     rax, rbx\n");
 		fprintf(out, "    push    rax\n");
+		*stack_count += 1;
 		break;
 	case TOK_MULTIPLY:
+		if (*stack_count < 2) {
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
 		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		*stack_count -= 2;
 		fprintf(out, "    mul     rbx\n");
 		fprintf(out, "    push    rax\n");
+		*stack_count += 1;
 		break;
 	case TOK_DIVIDE:
+		if (*stack_count < 2) {
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
 		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		*stack_count -= 2;
 		fprintf(out, "    div     rbx\n");
 		fprintf(out, "    push    rax\n");
+		*stack_count += 1;
 		break;
 	case TOK_DUMP:
+		if (*stack_count < 1) {
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
 		fprintf(out, "    pop     rdi\n");
+		*stack_count -= 1;
 		fprintf(out, "    call    dump\n");
 		break;
 	case TOK_EQUAL:
+		if (*stack_count < 2) {
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
 		fprintf(out, "    mov     rdx, 1\n");
 		fprintf(out, "    mov     rcx, 0\n");
 		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		*stack_count -= 2;
 		fprintf(out, "    cmp     rax, rbx\n");
 		fprintf(out, "    cmove   rcx, rdx\n");
 		fprintf(out, "    push    rcx\n");
+		*stack_count += 1;
 		break;
 	case TOK_IF:
+		if (*stack_count < 1) {
+			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
 		fprintf(out, "    pop     rax\n");
+		*stack_count -= 1;
 		fprintf(out, "    test    rax, rax\n");
-		fprintf(out, "    jz      .L%zu\n", *label_count);
+		fprintf(out, "    jz      .L%u\n", instruction.value.u32);
 		break;
 	case TOK_ELSE:
-		assert(false && "Not implemented");
+		fprintf(out, "    jmp     .L%u\n", instruction.value.u32);
+		fprintf(out, ".L%zu:\n", ip + 1);
 		break;
 	case TOK_END:
-		fprintf(out, ".L%zu:\n", *label_count++);
+		fprintf(out, ".L%zu:\n", ip);
 		break;
 	default:
 		assert(false && "Unreachable");
@@ -149,9 +210,9 @@ void compileProgram(InstructionArray * instructions, const char * filepath)
 	fprintf(out, "\n");
 	fprintf(out, "global _start\n");
 	fprintf(out, "_start:\n");
-	size_t label_count = 0;
+	size_t stack_count = 0;
 	for (size_t i = 0; i < instructions->count; i++) {
-		compileInstruction(&label_count, instructions->items[i], out);
+		compileInstruction(&stack_count, i, instructions->items[i], out);
 	}
 	fprintf(out, "    mov     rax, 60\n");
 	fprintf(out, "    mov     rdi, 0\n");
