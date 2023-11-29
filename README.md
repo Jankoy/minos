@@ -4,6 +4,8 @@ Uses a modified version of the nob build system/library/framework by [Tsoding](h
 
 ## Build
 
+### Dependencies: sudo apt install nasm
+
 The program can be built by running any C compiler on the nob.c file then running './nob'.
 
 For example:
