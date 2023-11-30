@@ -48,8 +48,8 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		fprintf(out, "    pop     rbx\n");
 		*stack_count -= 2;
 		fprintf(out, "    add     rax, rbx\n");
 		fprintf(out, "    push    rax\n");
@@ -60,8 +60,8 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		fprintf(out, "    pop     rbx\n");
 		*stack_count -= 2;
 		fprintf(out, "    sub     rax, rbx\n");
 		fprintf(out, "    push    rax\n");
@@ -72,8 +72,8 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		fprintf(out, "    pop     rbx\n");
 		*stack_count -= 2;
 		fprintf(out, "    mul     rbx\n");
 		fprintf(out, "    push    rax\n");
@@ -84,8 +84,8 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		fprintf(out, "    pop     rbx\n");
 		*stack_count -= 2;
 		fprintf(out, "    div     rbx\n");
 		fprintf(out, "    push    rax\n");
@@ -107,8 +107,8 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		}
 		fprintf(out, "    mov     rdx, 1\n");
 		fprintf(out, "    mov     rcx, 0\n");
-		fprintf(out, "    pop     rbx\n");
 		fprintf(out, "    pop     rax\n");
+		fprintf(out, "    pop     rbx\n");
 		*stack_count -= 2;
 		fprintf(out, "    cmp     rax, rbx\n");
 		fprintf(out, "    cmove   rcx, rdx\n");
@@ -177,33 +177,12 @@ static void write_dump_function(FILE * out)
 
 void compileProgram(InstructionArray * instructions, const char * filepath)
 {
-	char nodot[32] = {0};
-	char dotasm[32] = {0};
-	char doto[32] = {0};
+	char out_filepath[32] = {0};
 	
-	{
-		Nob_String_Builder out_filepath_sb = {0};
-		
-		nob_sb_append_cstr(&out_filepath_sb, filepath);
-		nob_sb_append_null(&out_filepath_sb);
-		size_t diff = strip_ext(out_filepath_sb.items);
-		out_filepath_sb.count -= diff + 2;
-		memcpy(nodot, out_filepath_sb.items, strlen(out_filepath_sb.items));
-		
-		nob_sb_append_cstr(&out_filepath_sb, ".asm");
-		nob_sb_append_null(&out_filepath_sb);
-		memcpy(dotasm, out_filepath_sb.items, strlen(out_filepath_sb.items));
-		
-		strip_ext(out_filepath_sb.items);
-		out_filepath_sb.count -= 5;
-		nob_sb_append_cstr(&out_filepath_sb, ".o");
-		nob_sb_append_null(&out_filepath_sb);
-		memcpy(doto, out_filepath_sb.items, strlen(out_filepath_sb.items));
-		
-		nob_sb_free(out_filepath_sb);
-	}
+	memcpy(out_filepath, filepath, strlen(filepath));
+	strip_ext(out_filepath);		
 	
-	FILE * out = fopen(dotasm, "w");
+	FILE * out = fopen("tmp.asm", "w");
 	fprintf(out, "segment .text\n");
 	fprintf(out, "\n");
 	write_dump_function(out);
@@ -221,11 +200,11 @@ void compileProgram(InstructionArray * instructions, const char * filepath)
 	
 	Nob_Cmd cmd = {0};
 	nob_cmd_append(&cmd, "nasm");
-	nob_cmd_append(&cmd, "-felf64", dotasm);
+	nob_cmd_append(&cmd, "-felf64", "tmp.asm");
 	if (!nob_cmd_run_sync(cmd)) exit(1);
 
 	cmd.count = 0;
 	nob_cmd_append(&cmd, "ld");
-	nob_cmd_append(&cmd, "-o", nodot, doto);
+	nob_cmd_append(&cmd, "-o", out_filepath, "tmp.o");
 	if (!nob_cmd_run_sync(cmd)) exit(1);
 }
