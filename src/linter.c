@@ -104,9 +104,15 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 		if (nob_sv_eq(token, nob_sv_from_cstr("else"))) {
 			if (stack->count > 0) {
 				size_t index = stack->items[stack->count - 1];
-				nob_da_pop(stack);
-				instructions->items[index].value = u32((uint32_t) instructions->count + 1);
-				nob_da_append(stack, instructions->count);
+				if (instructions->items[index].token.type == TOK_IF) {
+					nob_da_pop(stack);
+					instructions->items[index].value = u32((uint32_t) instructions->count + 1);
+					nob_da_append(stack, instructions->count);
+				} else {
+					reportError(filepath, line_num, col_num, "An 'else' statement without a preceding 'if' statement");
+					success = false;
+					continue;
+				}
 			} else {
 				reportError(filepath, line_num, col_num, "An 'else' statement without a preceding 'if' statement");
 				success = false;
@@ -121,13 +127,53 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 				nob_da_pop(stack);
 				if (instructions->items[index].token.type == TOK_IF || instructions->items[index].token.type == TOK_ELSE) {
 					instructions->items[index].value = u32((uint32_t) instructions->count);
+					Value v = u32((uint32_t) instructions->count + 1); // I have to split this up because of pointer incrementation in the nob_da_append macro
+					nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_END, v));
+					continue;
+				} else if (instructions->items[index].token.type == TOK_DO) {
+					Value v = u32((uint32_t) instructions->count + 1); // To save the instruction pointer
+					nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_END, instructions->items[index].value));
+					instructions->items[index].value = v;
+					continue;
+				} else {
+					reportError(filepath, line_num, token.data - start + 1, "An 'end' statement can only close an 'if', 'else', or 'do' statement");
+					success = false;
+					continue;
 				}
 			} else {
-				reportError(filepath, line_num, token.data - start + 1, "An 'end' statement without a preceding block opening statement");
+				reportError(filepath, line_num, token.data - start + 1, "An 'end' statement without a preceding 'if', 'else', or 'do' statement");
 				success = false;
 				continue;
 			}
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_END, u32(0)));
+		}
+		if (nob_sv_eq(token, nob_sv_from_cstr("dup"))) {
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_DUP, u32(0)));
+			continue;
+		}
+		if (nob_sv_eq(token, nob_sv_from_cstr(">"))) {
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_GT, u32(0)));
+			continue;
+		}
+		if (nob_sv_eq(token, nob_sv_from_cstr("while"))) {
+			nob_da_append(stack, instructions->count);
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_WHILE, u32(0)));
+			continue;
+		}
+		if (nob_sv_eq(token, nob_sv_from_cstr("do"))) {
+			size_t index = stack->items[stack->count - 1];
+			nob_da_pop(stack);
+			if (instructions->items[index].token.type == TOK_WHILE) {
+				nob_da_append(stack, instructions->count);
+				nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_DO, u32(index)));
+				continue;
+			} else {
+				reportError(filepath, line_num, token.data - start + 1, "A 'do' statement must come immediately after a 'while' statement");
+				success = false;
+				continue;
+			}
+		}
+		if (nob_sv_eq(token, nob_sv_from_cstr("<"))) {
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_GT, u32(0)));
 			continue;
 		}
 		reportError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unrecognized token: '"SV_Fmt"'", SV_Arg(token)));

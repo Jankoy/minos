@@ -35,7 +35,22 @@ The '.' is the dump instruction, it pops the top item off of the stack and displ
 The next line pushes the numbers 500 and 80 to the stack before subtracting them and then dumping the difference to the screen.
 The third line pushes 420 to the stack then pops two items off of the stack and compares them, then dumps them.
 
-Currently Minos has 9 valid commands; push (A number literal), add (+), subtract (-), multiply (*), divide (/), dump (.), equal (=), if (if), else (else), and end (end).
+Currently Minos has 14 valid commands:
+	push (Any number literal),
+	add (+),
+	subtract (-),
+	multiply (*),
+	divide (/),
+	dump (.), 
+	equal (=),
+	if,
+	else,
+	end,
+	duplicate (dup),
+	greater than (>),
+	while, 
+	do,
+	and less than (<).
 
 An example of if-else statements:
 
@@ -53,3 +68,13 @@ end
 
 The code above will dump 69 to the output, something to be aware of, if statements in Minos are syntactically 'reversed' from standard if statements.
 The conditions generally are before the if statement and not after, considering they have to be pushed onto the stack for the if to pop them off.
+
+There are also while loops which follow a similar principle.
+
+```minos
+5
+while dup 0 > do
+	dup .
+	1 -
+end
+```

@@ -19,6 +19,7 @@ static size_t strip_ext(char *fname)
 
 static void compileInstruction(size_t * stack_count, size_t ip, Instruction instruction, FILE * out)
 {
+	fprintf(out, ".INSTRUCTION_%zu:\n", ip);
 	switch (instruction.token.type) {
 	case TOK_PUSH:
 		switch (instruction.value.type) {
@@ -45,11 +46,11 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_PLUS:
 		if (*stack_count < 2) {
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    pop     rax\n");
 		fprintf(out, "    pop     rbx\n");
+		fprintf(out, "    pop     rax\n");
 		*stack_count -= 2;
 		fprintf(out, "    add     rax, rbx\n");
 		fprintf(out, "    push    rax\n");
@@ -57,11 +58,11 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_MINUS:
 		if (*stack_count < 2) {
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    pop     rax\n");
 		fprintf(out, "    pop     rbx\n");
+		fprintf(out, "    pop     rax\n");
 		*stack_count -= 2;
 		fprintf(out, "    sub     rax, rbx\n");
 		fprintf(out, "    push    rax\n");
@@ -69,11 +70,11 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_MULTIPLY:
 		if (*stack_count < 2) {
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    pop     rax\n");
 		fprintf(out, "    pop     rbx\n");
+		fprintf(out, "    pop     rax\n");
 		*stack_count -= 2;
 		fprintf(out, "    mul     rbx\n");
 		fprintf(out, "    push    rax\n");
@@ -81,11 +82,11 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_DIVIDE:
 		if (*stack_count < 2) {
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    pop     rax\n");
 		fprintf(out, "    pop     rbx\n");
+		fprintf(out, "    pop     rax\n");
 		*stack_count -= 2;
 		fprintf(out, "    div     rbx\n");
 		fprintf(out, "    push    rax\n");
@@ -93,7 +94,7 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_DUMP:
 		if (*stack_count < 1) {
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
 		fprintf(out, "    pop     rdi\n");
@@ -101,14 +102,14 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		fprintf(out, "    call    dump\n");
 		break;
 	case TOK_EQUAL:
+		fprintf(out, "    mov     rcx, 0\n");
+		fprintf(out, "    mov     rdx, 1\n");
 		if (*stack_count < 2) {
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
-		fprintf(out, "    mov     rdx, 1\n");
-		fprintf(out, "    mov     rcx, 0\n");
-		fprintf(out, "    pop     rax\n");
 		fprintf(out, "    pop     rbx\n");
+		fprintf(out, "    pop     rax\n");
 		*stack_count -= 2;
 		fprintf(out, "    cmp     rax, rbx\n");
 		fprintf(out, "    cmove   rcx, rdx\n");
@@ -117,20 +118,73 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_IF:
 		if (*stack_count < 1) {
-			nob_log(NOB_ERROR, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
 			exit(1);
 		}
 		fprintf(out, "    pop     rax\n");
 		*stack_count -= 1;
 		fprintf(out, "    test    rax, rax\n");
-		fprintf(out, "    jz      .L%u\n", instruction.value.u32);
+		fprintf(out, "    jz      .INSTRUCTION_%u\n", instruction.value.u32);
 		break;
 	case TOK_ELSE:
-		fprintf(out, "    jmp     .L%u\n", instruction.value.u32);
-		fprintf(out, ".L%zu:\n", ip + 1);
+		fprintf(out, "    jmp     .INSTRUCTION_%u\n", instruction.value.u32);
 		break;
 	case TOK_END:
-		fprintf(out, ".L%zu:\n", ip);
+		if (instruction.value.u32 && instruction.value.u32 < ip + 1)
+			fprintf(out, "    jmp     .INSTRUCTION_%u\n", instruction.value.u32);
+		break;
+	case TOK_DUP:
+		if (*stack_count < 1) {
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
+		fprintf(out, "    pop     rax\n");
+		*stack_count -= 1;
+		fprintf(out, "    push    rax\n");
+		fprintf(out, "    push    rax\n");
+		*stack_count += 2;
+		break;
+	case TOK_GT:
+		fprintf(out, "    mov     rcx, 0\n");
+		fprintf(out, "    mov     rdx, 1\n");
+		if (*stack_count < 2) {
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
+		fprintf(out, "    pop     rbx\n");
+		fprintf(out, "    pop     rax\n");
+		*stack_count -= 2;
+		fprintf(out, "    cmp     rax, rbx\n");
+		fprintf(out, "    cmovg   rcx, rdx\n");
+		fprintf(out, "    push    rcx\n");
+		*stack_count += 1;
+		break;
+	case TOK_WHILE:
+		break;
+	case TOK_DO:
+		if (*stack_count < 1) {
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
+		fprintf(out, "    pop     rax\n");
+		*stack_count -= 1;
+		fprintf(out, "    test    rax, rax\n");
+		fprintf(out, "    jz      .INSTRUCTION_%u\n", instruction.value.u32);
+		break;
+	case TOK_LT:
+		fprintf(out, "    mov     rcx, 0\n");
+		fprintf(out, "    mov     rdx, 1\n");
+		if (*stack_count < 2) {
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		}
+		fprintf(out, "    pop     rbx\n");
+		fprintf(out, "    pop     rax\n");
+		*stack_count -= 2;
+		fprintf(out, "    cmp     rax, rbx\n");
+		fprintf(out, "    cmovl   rcx, rdx\n");
+		fprintf(out, "    push    rcx\n");
+		*stack_count += 1;
 		break;
 	default:
 		assert(false && "Unreachable");
@@ -193,6 +247,8 @@ void compileProgram(InstructionArray * instructions, const char * filepath)
 	for (size_t i = 0; i < instructions->count; i++) {
 		compileInstruction(&stack_count, i, instructions->items[i], out);
 	}
+	fprintf(out, ".INSTRUCTION_%zu:\n", instructions->count);
+	fprintf(out, ".EXIT:\n");
 	fprintf(out, "    mov     rax, 60\n");
 	fprintf(out, "    mov     rdi, 0\n");
 	fprintf(out, "    syscall\n");

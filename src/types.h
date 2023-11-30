@@ -15,7 +15,12 @@ typedef enum {
 	TOK_EQUAL,
 	TOK_IF,
 	TOK_ELSE,
-	TOK_END
+	TOK_END,
+	TOK_DUP,
+	TOK_GT,
+	TOK_WHILE,
+	TOK_DO,
+	TOK_LT
 } TokenType;
 
 typedef struct {

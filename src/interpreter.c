@@ -470,28 +470,9 @@ static Value do_equal(Instruction instruction, Value a, Value b)
 	return (Value) {0};
 }
 
-static void do_if(Instruction instruction, Value value, size_t end_index, size_t * ip)
+static void do_if(Value value, size_t end_index, size_t * ip)
 {
-	switch (value.type) {
-		case I32:
-			if (!value.i32) *ip = end_index;
-			break;
-		case U32:
-			if (!value.u32) *ip = end_index;
-			break;
-		case F32:
-			if (!value.f32) *ip = end_index;
-			break;
-		case BOOL:
-			if (!value._bool) *ip = end_index;
-			break;
-		case ERR:
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
-			exit(1);
-		default:
-			assert(false && "Unreachable");
-			break;
-	}
+	if (!value.i32) *ip = end_index;
 }
 
 static void do_else(size_t end_index, size_t * ip)
@@ -499,9 +480,191 @@ static void do_else(size_t end_index, size_t * ip)
 	*ip = end_index;
 }
 
-static void do_end()
+static void do_end(size_t return_index, size_t * ip)
+{
+	if (return_index) *ip = return_index;
+}
+
+static Value do_gt(Instruction instruction, Value a, Value b)
+{
+	switch (a.type) {
+	case I32:
+		switch (b.type) {
+		case I32:
+			return _bool(a.i32 > b.i32);
+		case U32:
+			return _bool(a.i32 > (int32_t)b.u32);
+		case F32:
+			return _bool(a.i32 > b.f32);
+		case BOOL:
+			return _bool(a.i32 > b._bool);
+		case ERR:
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		break;
+	case U32:
+		switch (b.type) {
+		case I32:
+			return _bool(a.u32 > (uint32_t)b.i32);
+		case U32:
+			return _bool(a.u32 > b.u32);
+		case F32:
+			return _bool(a.u32 > b.f32);
+		case BOOL:
+			return _bool(a.u32 > b._bool);
+		case ERR:
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		break;
+	case F32:
+		switch (b.type) {
+		case I32:
+			return _bool(a.f32 > b.i32);
+		case U32:
+			return _bool(a.f32 > b.u32);
+		case F32:
+			return _bool(a.f32 > b.f32);
+		case BOOL:
+			return _bool(a.f32 > b._bool);
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		break;
+	case BOOL:
+		switch (b.type) {
+		case I32:
+			return _bool(a._bool > b.i32);
+		case U32:
+			return _bool(a._bool > b.u32);
+		case F32:
+			return _bool(a._bool > b.f32);
+		case BOOL:
+			return _bool(a._bool > b._bool);
+		case ERR:
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		break;
+	case ERR:
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		exit(1);
+	default:
+		assert(false && "Unreachable");
+		break;
+	}
+
+	return (Value) {0};
+}
+
+static void do_dup(Value value, ValueStack * stack)
+{
+	do_push(stack, value);
+	do_push(stack, value);
+}
+
+static void do_while()
 {
 	
+}
+
+static void do_do(Value value, size_t end_index, size_t * ip)
+{
+	if (!value.i32) *ip = end_index;
+}
+
+static Value do_lt(Instruction instruction, Value a, Value b)
+{
+	switch (a.type) {
+	case I32:
+		switch (b.type) {
+		case I32:
+			return _bool(a.i32 < b.i32);
+		case U32:
+			return _bool(a.i32 < (int32_t)b.u32);
+		case F32:
+			return _bool(a.i32 < b.f32);
+		case BOOL:
+			return _bool(a.i32 < b._bool);
+		case ERR:
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		break;
+	case U32:
+		switch (b.type) {
+		case I32:
+			return _bool(a.u32 < (uint32_t)b.i32);
+		case U32:
+			return _bool(a.u32 < b.u32);
+		case F32:
+			return _bool(a.u32 < b.f32);
+		case BOOL:
+			return _bool(a.u32 < b._bool);
+		case ERR:
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		break;
+	case F32:
+		switch (b.type) {
+		case I32:
+			return _bool(a.f32 < b.i32);
+		case U32:
+			return _bool(a.f32 < b.u32);
+		case F32:
+			return _bool(a.f32 < b.f32);
+		case BOOL:
+			return _bool(a.f32 < b._bool);
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		break;
+	case BOOL:
+		switch (b.type) {
+		case I32:
+			return _bool(a._bool < b.i32);
+		case U32:
+			return _bool(a._bool < b.u32);
+		case F32:
+			return _bool(a._bool < b.f32);
+		case BOOL:
+			return _bool(a._bool < b._bool);
+		case ERR:
+			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			exit(1);
+		default:
+			assert(false && "Unreachable");
+			break;
+		}
+		break;
+	case ERR:
+		reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+		exit(1);
+	default:
+		assert(false && "Unreachable");
+		break;
+	}
+
+	return (Value) {0};
 }
 
 static void interpretInstruction(ValueStack * stack, Instruction instruction, size_t * ip)
@@ -530,15 +693,30 @@ static void interpretInstruction(ValueStack * stack, Instruction instruction, si
 			do_push(stack, do_equal(instruction, do_pop(instruction, stack), do_pop(instruction, stack)));
 			break;
 		case TOK_IF:
-			do_if(instruction, do_pop(instruction, stack), instruction.value.u32, ip);
+			do_if(do_pop(instruction, stack), instruction.value.u32, ip);
 			break;
 		case TOK_ELSE:
 			do_else(instruction.value.u32, ip);
 			break;
 		case TOK_END:
-			do_end();
+			do_end(instruction.value.u32, ip);
 			break;
-			default:
+		case TOK_DUP:
+			do_dup(do_pop(instruction, stack), stack);
+			break;
+		case TOK_GT:
+			do_push(stack, do_gt(instruction, do_pop(instruction, stack), do_pop(instruction, stack)));
+			break;
+		case TOK_WHILE:
+			do_while();
+			break;
+		case TOK_DO:
+			do_do(do_pop(instruction, stack), instruction.value.u32, ip);
+			break;
+		case TOK_LT:
+			do_push(stack, do_lt(instruction, do_pop(instruction, stack), do_pop(instruction, stack)));
+			break;
+		default:
 			assert(false && "Unreachable");
 			break;
 	}
