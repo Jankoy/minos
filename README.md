@@ -52,4 +52,4 @@ end
 ```
 
 The code above will dump 69 to the output, something to be aware of, if statements in Minos are syntactically 'reversed' from standard if statements.
-The conditions generally are before the if statement and not after, considering they have to be pushed onto the stack for the if to pop them off.
+The conditions are generally before the if statement and not after, considering they have to be pushed onto the stack for the if to pop them off.
