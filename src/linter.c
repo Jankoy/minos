@@ -41,12 +41,36 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 	while (line.count > 0 && success) {
 		Nob_String_View token = nob_sv_chop_by_space(&line);
 		size_t col_num = token.data - start + 1;
-
+		
 		if (token.data[0] == '#') {
 			break;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("#"))) {
 			break;
+		}
+		if (isdigit((int)*token.data)) {
+			Nob_String_Builder token_copy = {0};
+			nob_sb_append_buf(&token_copy, token.data, token.count);
+			nob_sb_append_null(&token_copy);
+			int num = 0;
+			int result = str2int(&num, token_copy.items, 10);
+			nob_sb_free(token_copy);
+			if (result == STR2INT_SUCCESS) {
+				nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, i32(num)));
+			} else {
+				reportError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unable to convert '"SV_Fmt"' into a number", SV_Arg(token)));
+				nob_temp_reset();
+				success = false;
+			}
+			continue;
+		}
+		if (nob_sv_eq(token, nob_sv_from_cstr("true"))) {
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, _bool(true)));
+			continue;
+		}
+		if (nob_sv_eq(token, nob_sv_from_cstr("false"))) {
+			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, _bool(false)));
+			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("+"))) {
 			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PLUS, u32(0)));
@@ -70,14 +94,6 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("="))) {
 			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_EQUAL, u32(0)));
-			continue;
-		}
-		if (nob_sv_eq(token, nob_sv_from_cstr("true"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, _bool(true)));
-			continue;
-		}
-		if (nob_sv_eq(token, nob_sv_from_cstr("false"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, _bool(false)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("if"))) {
@@ -112,22 +128,6 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 				continue;
 			}
 			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_END, u32(0)));
-			continue;
-		}
-		if (isdigit((int)*token.data)) {
-			Nob_String_Builder token_copy = {0};
-			nob_sb_append_buf(&token_copy, token.data, token.count);
-			nob_sb_append_null(&token_copy);
-			int num = 0;
-			int result = str2int(&num, token_copy.items, 10);
-			nob_sb_free(token_copy);
-			if (result == STR2INT_SUCCESS) {
-				nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, i32(num)));
-			} else {
-				reportError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unable to convert '"SV_Fmt"' into a number", SV_Arg(token)));
-				nob_temp_reset();
-				success = false;
-			}
 			continue;
 		}
 		reportError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unrecognized token: '"SV_Fmt"'", SV_Arg(token)));
