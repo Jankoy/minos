@@ -9,7 +9,7 @@ const char * input_paths[] = {
 	"src/compiler.c",
 	"src/interpreter.c"
 };
-const char *output = "net-test";
+const char *output = "minos";
 
 int main(int argc, char **argv) {
   NOB_GO_REBUILD_URSELF(argc, argv);
