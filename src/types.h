@@ -24,26 +24,19 @@ typedef enum {
 } TokenType;
 
 typedef struct {
-	const char * filepath;
-	size_t line_num;
-	size_t col_num;
+	const char * filePath;
+	size_t lineNum;
+	size_t colNum;
 	TokenType type;
 } Token;
 
 typedef enum {
-	ERR = 0,
 	I32,
-	U32,
-	F32,
-	BOOL
 } ValueType;
 
 typedef struct {
 	union {
 		int32_t i32;
-		uint32_t u32;
-		float f32;
-		bool _bool;
 	};
 	ValueType type;
 } Value;
@@ -77,13 +70,8 @@ typedef struct {
 	size_t capacity;
 } IndexStack;
 
-Value i32(int32_t n);
-Value u32(uint32_t n);
-Value f32(float n);
-Value _bool(bool b);
+Value i32Value(int32_t n);
 
-Token tok(const char * filepath, size_t line_num, size_t col_num, TokenType type);
-
-void reportError(const char * filepath, size_t line_num, size_t column_num, const char * error);
+Token makeToken(const char * filePath, size_t lineNum, size_t colNum, TokenType type);
 
 #endif // _TYPES_H

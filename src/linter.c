@@ -1,6 +1,7 @@
 #include "linter.h"
 
 #include "nob.h"
+#include "error.h"
 #include <limits.h>
 
 #define STR2INT_SUCCESS        0
@@ -24,22 +25,22 @@ static int str2int(int *out, char *s, int base) {
     return STR2INT_SUCCESS;
 }
 
-static Instruction instruct(const char * filepath, size_t line_num, size_t col_num, TokenType type, Value x)
+static Instruction instruct(const char * filePath, size_t lineNum, size_t colNum, TokenType type, Value x)
 {
 	Instruction i = {0};
-	i.token = tok(filepath, line_num, col_num, type);
+	i.token = makeToken(filePath, lineNum, colNum, type);
 	i.value = x;
 	return i;
 }
 
-static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, Nob_String_View line, size_t line_num, InstructionArray * instructions)
+static bool lintInstructionsFromLine(const char * filePath, IndexStack * stack, Nob_String_View line, size_t lineNum, InstructionArray * instructions)
 {
 	bool success = true;
 	const char * start = line.data;
 
 	while (line.count > 0 && success) {
 		Nob_String_View token = nob_sv_chop_by_space(&line);
-		size_t col_num = token.data - start + 1;
+		size_t colNum = token.data - start + 1;
 		
 		if (token.data[0] == '#') {
 			break;
@@ -55,127 +56,129 @@ static bool lintInstructionsFromLine(const char * filepath, IndexStack * stack, 
 			int result = str2int(&num, token_copy.items, 10);
 			nob_sb_free(token_copy);
 			if (result == STR2INT_SUCCESS) {
-				nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, i32(num)));
+				nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_PUSH, i32Value(num)));
 			} else {
-				reportError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unable to convert '"SV_Fmt"' into a number", SV_Arg(token)));
+			    setError(ERROR_UNABLE_TO_COVERT_NUMBER, nob_temp_sprintf("Unable to convert '"SV_Fmt"' into a number", SV_Arg(token)));
+				reportError(filePath, lineNum, token.data - start + 1, ERROR_UNABLE_TO_COVERT_NUMBER);
 				nob_temp_reset();
 				success = false;
 			}
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("true"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, _bool(true)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_PUSH, i32Value(true)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("false"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PUSH, _bool(false)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_PUSH, i32Value(false)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("+"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_PLUS, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_PLUS, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("-"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_MINUS, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_MINUS, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("*"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_MULTIPLY, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_MULTIPLY, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("/"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_DIVIDE, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_DIVIDE, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("."))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_DUMP, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_DUMP, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("="))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_EQUAL, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_EQUAL, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("if"))) {
 			nob_da_append(stack, instructions->count);
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_IF, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_IF, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("else"))) {
 			if (stack->count > 0) {
 				size_t index = stack->items[stack->count - 1];
 				if (instructions->items[index].token.type == TOK_IF) {
-					nob_da_pop(stack);
-					instructions->items[index].value = u32((uint32_t) instructions->count + 1);
+					stack->count--;
+					instructions->items[index].value = i32Value((int32_t) instructions->count + 1);
 					nob_da_append(stack, instructions->count);
 				} else {
-					reportError(filepath, line_num, col_num, "An 'else' statement without a preceding 'if' statement");
+					reportError(filePath, lineNum, colNum, ERROR_MISMATCHED_IF_AND_ELSE);
 					success = false;
 					continue;
 				}
 			} else {
-				reportError(filepath, line_num, col_num, "An 'else' statement without a preceding 'if' statement");
+				reportError(filePath, lineNum, colNum, ERROR_MISMATCHED_IF_AND_ELSE);
 				success = false;
 				continue;
 			}
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_ELSE, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_ELSE, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("end"))) {
 			if (stack->count > 0) {
 				size_t index = stack->items[stack->count - 1];
-				nob_da_pop(stack);
+				stack->count--;
 				if (instructions->items[index].token.type == TOK_IF || instructions->items[index].token.type == TOK_ELSE) {
-					instructions->items[index].value = u32((uint32_t) instructions->count);
-					Value v = u32((uint32_t) instructions->count + 1); // I have to split this up because of pointer incrementation in the nob_da_append macro
-					nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_END, v));
+					instructions->items[index].value = i32Value((int32_t) instructions->count);
+					Value v = i32Value((int32_t) instructions->count + 1); // I have to split this up because of pointer incrementation in the nob_da_append macro
+					nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_END, v));
 					continue;
 				} else if (instructions->items[index].token.type == TOK_DO) {
-					Value v = u32((uint32_t) instructions->count + 1); // To save the instruction pointer
-					nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_END, instructions->items[index].value));
+					Value v = i32Value((int32_t) instructions->count + 1); // To save the instruction pointer
+					nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_END, instructions->items[index].value));
 					instructions->items[index].value = v;
 					continue;
 				} else {
-					reportError(filepath, line_num, token.data - start + 1, "An 'end' statement can only close an 'if', 'else', or 'do' statement");
+					reportError(filePath, lineNum, token.data - start + 1, ERROR_OUT_OF_PLACE_END);
 					success = false;
 					continue;
 				}
 			} else {
-				reportError(filepath, line_num, token.data - start + 1, "An 'end' statement without a preceding 'if', 'else', or 'do' statement");
+				reportError(filePath, lineNum, token.data - start + 1, ERROR_OUT_OF_PLACE_END);
 				success = false;
 				continue;
 			}
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("dup"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_DUP, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_DUP, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr(">"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_GT, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_GT, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("while"))) {
 			nob_da_append(stack, instructions->count);
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_WHILE, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_WHILE, i32Value(0)));
 			continue;
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("do"))) {
 			size_t index = stack->items[stack->count - 1];
-			nob_da_pop(stack);
+			stack->count--;
 			if (instructions->items[index].token.type == TOK_WHILE) {
 				nob_da_append(stack, instructions->count);
-				nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_DO, u32(index)));
+				nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_DO, i32Value(index)));
 				continue;
 			} else {
-				reportError(filepath, line_num, token.data - start + 1, "A 'do' statement must come immediately after a 'while' statement");
+				reportError(filePath, lineNum, token.data - start + 1, ERROR_MISSING_DO_AFTER_WHILE);
 				success = false;
 				continue;
 			}
 		}
 		if (nob_sv_eq(token, nob_sv_from_cstr("<"))) {
-			nob_da_append(instructions, instruct(filepath, line_num, col_num, TOK_GT, u32(0)));
+			nob_da_append(instructions, instruct(filePath, lineNum, colNum, TOK_GT, i32Value(0)));
 			continue;
 		}
-		reportError(filepath, line_num, token.data - start + 1, nob_temp_sprintf("Unrecognized token: '"SV_Fmt"'", SV_Arg(token)));
+		setError(ERROR_UNRECOGNIZED_TOKEN, nob_temp_sprintf("Unrecognized token: '"SV_Fmt"'", SV_Arg(token)));
+		reportError(filePath, lineNum, token.data - start + 1, ERROR_UNRECOGNIZED_TOKEN);
 		nob_temp_reset();
 		success = false;
 	}

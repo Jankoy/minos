@@ -1,5 +1,6 @@
 #include "compiler.h"
 
+#include "error.h"
 #include "nob.h"
 
 static size_t strip_ext(char *fname)
@@ -26,27 +27,14 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		case I32:
 			fprintf(out, "    push    %d\n", instruction.value.i32);
 			break;
-		case U32:
-			fprintf(out, "    push    %u\n", instruction.value.u32);
-			break;
-		case F32:
-			fprintf(out, "    push    %f\n", instruction.value.f32);
-			break;
-		case BOOL:
-			fprintf(out, "    push    %d\n", instruction.value._bool);
-			break;
-		case ERR:
-			assert(false && "Unreachable");
-			break;
 		default:
 			assert(false && "Unreachable");
-			break;
 		}
 		*stack_count += 1;
 		break;
 	case TOK_PLUS:
 		if (*stack_count < 2) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rbx\n");
@@ -58,7 +46,7 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_MINUS:
 		if (*stack_count < 2) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rbx\n");
@@ -70,7 +58,7 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_MULTIPLY:
 		if (*stack_count < 2) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rbx\n");
@@ -82,7 +70,7 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_DIVIDE:
 		if (*stack_count < 2) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rbx\n");
@@ -94,7 +82,7 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_DUMP:
 		if (*stack_count < 1) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rdi\n");
@@ -105,7 +93,7 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		fprintf(out, "    mov     rcx, 0\n");
 		fprintf(out, "    mov     rdx, 1\n");
 		if (*stack_count < 2) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rbx\n");
@@ -118,24 +106,24 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_IF:
 		if (*stack_count < 1) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rax\n");
 		*stack_count -= 1;
 		fprintf(out, "    test    rax, rax\n");
-		fprintf(out, "    jz      .INSTRUCTION_%u\n", instruction.value.u32);
+		fprintf(out, "    jz      .INSTRUCTION_%u\n", instruction.value.i32);
 		break;
 	case TOK_ELSE:
-		fprintf(out, "    jmp     .INSTRUCTION_%u\n", instruction.value.u32);
+		fprintf(out, "    jmp     .INSTRUCTION_%u\n", instruction.value.i32);
 		break;
 	case TOK_END:
-		if (instruction.value.u32 && instruction.value.u32 < ip + 1)
-			fprintf(out, "    jmp     .INSTRUCTION_%u\n", instruction.value.u32);
+		if (instruction.value.i32 && (size_t)instruction.value.i32 < ip + 1)
+			fprintf(out, "    jmp     .INSTRUCTION_%u\n", instruction.value.i32);
 		break;
 	case TOK_DUP:
 		if (*stack_count < 1) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rax\n");
@@ -148,7 +136,7 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		fprintf(out, "    mov     rcx, 0\n");
 		fprintf(out, "    mov     rdx, 1\n");
 		if (*stack_count < 2) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rbx\n");
@@ -163,19 +151,19 @@ static void compileInstruction(size_t * stack_count, size_t ip, Instruction inst
 		break;
 	case TOK_DO:
 		if (*stack_count < 1) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rax\n");
 		*stack_count -= 1;
 		fprintf(out, "    test    rax, rax\n");
-		fprintf(out, "    jz      .INSTRUCTION_%u\n", instruction.value.u32);
+		fprintf(out, "    jz      .INSTRUCTION_%u\n", instruction.value.i32);
 		break;
 	case TOK_LT:
 		fprintf(out, "    mov     rcx, 0\n");
 		fprintf(out, "    mov     rdx, 1\n");
 		if (*stack_count < 2) {
-			reportError(instruction.token.filepath, instruction.token.line_num, instruction.token.col_num, "Segmentation fault, tried to use an operation that pops off of the stack while the stack was empty");
+			reportError(instruction.token.filePath, instruction.token.lineNum, instruction.token.colNum, ERROR_SEGFAULT_POP_FROM_EMPTY_STACK);
 			exit(1);
 		}
 		fprintf(out, "    pop     rbx\n");
@@ -229,12 +217,12 @@ static void write_dump_function(FILE * out)
 	fprintf(out, "    ret\n");
 }
 
-void compileProgram(InstructionArray * instructions, const char * filepath)
+void compileProgram(InstructionArray * instructions, const char * filePath)
 {
-	char out_filepath[32] = {0};
+	char outFilePath[32] = {0};
 	
-	memcpy(out_filepath, filepath, strlen(filepath));
-	strip_ext(out_filepath);		
+	memcpy(outFilePath, filePath, strlen(filePath));
+	strip_ext(outFilePath);
 	
 	FILE * out = fopen("tmp.asm", "w");
 	fprintf(out, "segment .text\n");
@@ -261,6 +249,6 @@ void compileProgram(InstructionArray * instructions, const char * filepath)
 
 	cmd.count = 0;
 	nob_cmd_append(&cmd, "ld");
-	nob_cmd_append(&cmd, "-o", out_filepath, "tmp.o");
+	nob_cmd_append(&cmd, "-o", outFilePath, "tmp.o");
 	if (!nob_cmd_run_sync(cmd)) exit(1);
 }

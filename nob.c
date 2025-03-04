@@ -1,53 +1,57 @@
 #define NOB_IMPLEMENTATION
+#define NOB_STRIP_PREFIX
 #include "src/nob.h"
 
-const char *compiler = "cc";
-const char * input_paths[] = {
+static const char *compiler = "cc";
+
+static const char * input_paths[] = {
 	"src/main.c",
 	"src/types.c",
+	"src/error.c",
 	"src/linter.c",
 	"src/compiler.c",
 	"src/interpreter.c"
 };
-const char *output = "minos";
+
+static const char *output = "minos";
 
 int main(int argc, char **argv) {
   NOB_GO_REBUILD_URSELF(argc, argv);
 
-  const char *program = nob_shift_args(&argc, &argv);
+  const char *program = shift_args(&argc, &argv);
   (void)program;
 
-  if (nob_needs_rebuild(output, input_paths, NOB_ARRAY_LEN(input_paths))) {
-    Nob_Cmd cmd = {0};
-    nob_cmd_append(&cmd, compiler);
-    nob_cmd_append(&cmd, "-Wall", "-Wextra", "-ggdb");
-    nob_cmd_append(&cmd, "-o", output);
-    nob_da_append_many(&cmd, input_paths, NOB_ARRAY_LEN(input_paths));
-    if (!nob_cmd_run_sync(cmd))
+  if (needs_rebuild(output, input_paths, ARRAY_LEN(input_paths))) {
+    Cmd cmd = {0};
+    cmd_append(&cmd, compiler);
+    cmd_append(&cmd, "-Wall", "-Wextra", "-ggdb");
+    cmd_append(&cmd, "-o", output);
+    da_append_many(&cmd, input_paths, ARRAY_LEN(input_paths));
+    if (!cmd_run_sync(cmd))
       return 1;
   } else {
-    nob_log(NOB_INFO, "Executable is already up to date");
+    nob_log(INFO, "Executable is already up to date");
   }
 
   if (argc > 0) {
-    const char *subcmd = nob_shift_args(&argc, &argv);
+    const char *subcmd = shift_args(&argc, &argv);
 
     if (strcmp(subcmd, "-r") == 0) {
-      Nob_Cmd cmd = {0};
-      nob_cmd_append(&cmd, nob_temp_sprintf("./%s", output));
-      nob_temp_reset();
-      nob_da_append_many(&cmd, argv, argc);
-      if (!nob_cmd_run_sync(cmd))
+      Cmd cmd = {0};
+      cmd_append(&cmd, temp_sprintf("./%s", output));
+      temp_reset();
+      da_append_many(&cmd, argv, argc);
+      if (!cmd_run_sync(cmd))
         return 1;
     } else if (strcmp(subcmd, "-d") == 0) {
-      Nob_Cmd cmd = {0};
-      nob_cmd_append(&cmd, "gdb");
-      nob_cmd_append(&cmd, nob_temp_sprintf("./%s", output));
-      nob_temp_reset();
-      if (!nob_cmd_run_sync(cmd))
+      Cmd cmd = {0};
+      cmd_append(&cmd, "gdb");
+      cmd_append(&cmd, temp_sprintf("./%s", output));
+      temp_reset();
+      if (!cmd_run_sync(cmd))
         return 1;
     } else {
-      nob_log(NOB_ERROR, "Unknown subcommand %s", subcmd);
+      nob_log(ERROR, "Unknown subcommand %s", subcmd);
     }
   }
 
