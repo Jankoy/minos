@@ -24,8 +24,8 @@ static Value doPop(ValueStack * stack)
 
 static Value doPlus(ValueStack * stack)
 {
-    Value a = doPop(stack);
     Value b = doPop(stack);
+    Value a = doPop(stack);
     
     switch (a.type) {
     case I32:
@@ -45,8 +45,8 @@ static Value doPlus(ValueStack * stack)
 
 static Value doMinus(ValueStack * stack)
 {
-    Value a = doPop(stack);
     Value b = doPop(stack);
+    Value a = doPop(stack);
     
 	switch (a.type) {
 	case I32:
@@ -66,8 +66,8 @@ static Value doMinus(ValueStack * stack)
 
 static Value doMultiply(ValueStack * stack)
 {
-    Value a = doPop(stack);
     Value b = doPop(stack);
+    Value a = doPop(stack);
     
 	switch (a.type) {
 	case I32:
@@ -87,8 +87,8 @@ static Value doMultiply(ValueStack * stack)
 
 static Value doDivide(ValueStack * stack)
 {
-    Value a = doPop(stack);
     Value b = doPop(stack);
+    Value a = doPop(stack);
     
 	switch (a.type) {
 	case I32:
@@ -123,8 +123,8 @@ static void doDump(ValueStack * stack)
 
 static Value doEqual(ValueStack * stack)
 {
-    Value a = doPop(stack);
     Value b = doPop(stack);
+    Value a = doPop(stack);
     
 	switch (a.type) {
 	case I32:
@@ -161,8 +161,8 @@ static void doEnd(size_t * ip)
 
 static Value doGt(ValueStack * stack)
 {
-    Value a = doPop(stack);
     Value b = doPop(stack);
+    Value a = doPop(stack);
     
 	switch (a.type) {
 	case I32:
@@ -199,8 +199,8 @@ static void doDo(ValueStack * stack, size_t * ip)
 
 static Value doLt(ValueStack * stack)
 {
-    Value a = doPop(stack);
     Value b = doPop(stack);
+    Value a = doPop(stack);
     
 	switch (a.type) {
 	case I32:
